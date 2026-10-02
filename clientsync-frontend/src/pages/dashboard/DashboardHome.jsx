@@ -14,17 +14,36 @@ export default function DashboardHome() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchData = async () => {
+        let isMounted = true;
+        const fetchData = async (isSilent = false) => {
             try {
                 const res = await api.get('/requests');
-                setRequests(res.data.data || []);
+                if (isMounted) {
+                    setRequests(res.data.data || []);
+                    setError('');
+                }
             } catch {
-                setError('Failed to load workspace data. Please refresh.');
+                if (isMounted && !isSilent) {
+                    setError('Failed to load workspace data. Please refresh.');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
+
         fetchData();
+
+        // Auto-poll in background every 12 seconds when active
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchData(true);
+            }
+        }, 12000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(timer);
+        };
     }, []);
 
     const total = requests.length;

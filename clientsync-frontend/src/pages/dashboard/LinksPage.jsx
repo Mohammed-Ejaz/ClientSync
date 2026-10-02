@@ -61,18 +61,32 @@ export default function LinksPage() {
     const [deleteBusy, setDeleteBusy] = useState(false);
     const [deleteError, setDeleteError] = useState('');
 
-    const fetchLinks = useCallback(async () => {
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const fetchLinks = useCallback(async (isSilent = false) => {
+        if (!isSilent) setIsRefreshing(true);
         try {
             const res = await api.get('/requests');
             setRequests(res.data.data || []);
+            setLoadError('');
         } catch {
-            setLoadError('Failed to load links.');
+            if (!isSilent) setLoadError('Failed to load links.');
         } finally {
             setLoading(false);
+            if (!isSilent) setTimeout(() => setIsRefreshing(false), 400);
         }
     }, []);
 
-    useEffect(() => { fetchLinks(); }, [fetchLinks]);
+    useEffect(() => {
+        fetchLinks();
+        // Auto-refresh in background every 10 seconds when tab is active
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchLinks(true);
+            }
+        }, 10000);
+        return () => clearInterval(timer);
+    }, [fetchLinks]);
 
     const handleGenerate = async (e) => {
         e.preventDefault();
@@ -212,25 +226,53 @@ export default function LinksPage() {
                     </AnimatePresence>
                 </motion.div>
 
-                {/* Filter Tabs */}
-                <div className="flex items-center gap-2 mb-4">
-                    {[['all', 'All'], ['Pending', 'Pending'], ['Completed', 'Completed']].map(([val, label]) => (
-                        <button
-                            key={val}
-                            onClick={() => setFilter(val)}
-                            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                            style={{
-                                background: filter === val ? 'rgba(99,102,241,0.2)' : 'transparent',
-                                color: filter === val ? 'var(--text-primary)' : 'var(--text-muted)',
-                                border: filter === val ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
-                            }}
+                {/* Filter Tabs & Refresh Controls */}
+                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        {[['all', 'All'], ['Pending', 'Pending'], ['Completed', 'Completed']].map(([val, label]) => (
+                            <button
+                                key={val}
+                                onClick={() => setFilter(val)}
+                                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                                style={{
+                                    background: filter === val ? 'rgba(99,102,241,0.2)' : 'transparent',
+                                    color: filter === val ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    border: filter === val ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
+                                }}
+                            >
+                                {label}
+                                <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                                    {val === 'all' ? requests.length : requests.filter((r) => r.status === val).length}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => fetchLinks(false)}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            color: isRefreshing ? 'var(--indigo-400)' : 'var(--text-secondary)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                        title="Check for newly completed client submissions"
+                    >
+                        <svg
+                            className={`transition-transform ${isRefreshing ? 'animate-spin' : ''}`}
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
                         >
-                            {label}
-                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                                {val === 'all' ? requests.length : requests.filter((r) => r.status === val).length}
-                            </span>
-                        </button>
-                    ))}
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                        </svg>
+                        <span>{isRefreshing ? 'Checking…' : 'Refresh Status'}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Live background syncing active" />
+                    </button>
                 </div>
 
                 {/* Links Table */}
@@ -291,7 +333,27 @@ export default function LinksPage() {
                                         <div className="md:col-span-1 hidden md:block text-xs" style={{ color: 'var(--text-muted)' }}>
                                             {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </div>
-                                        <div className="md:col-span-2 flex justify-start md:justify-end gap-2 flex-wrap sm:flex-nowrap">
+                                        <div className="md:col-span-2 flex justify-start md:justify-end items-center gap-2 flex-wrap sm:flex-nowrap">
+                                            <button
+                                                onClick={() => fetchLinks(false)}
+                                                disabled={isRefreshing}
+                                                className="text-xs p-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/10"
+                                                style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                                                title="Refresh this link status"
+                                                aria-label={`Refresh status for ${req.clientName}`}
+                                            >
+                                                <svg
+                                                    className={isRefreshing ? 'animate-spin' : ''}
+                                                    width="13"
+                                                    height="13"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                >
+                                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                                                </svg>
+                                            </button>
                                             <button
                                                 onClick={() => setEditingRequest(req)}
                                                 className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all duration-200"
@@ -306,9 +368,10 @@ export default function LinksPage() {
                                             )}
                                             <button
                                                 onClick={() => setDeletingRequest(req)}
-                                                className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all duration-200"
+                                                className="text-xs p-1.5 rounded-lg font-medium transition-all duration-200"
                                                 style={{ background: 'rgba(248,113,113,0.08)', color: '#f87171', border: '1px solid rgba(248,113,113,0.18)' }}
                                                 aria-label={`Delete link for ${req.clientName}`}
+                                                title="Delete link"
                                             >
                                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                                             </button>
