@@ -391,8 +391,9 @@ export default function LinksPage() {
                                             </button>
                                         </div>
                                     </motion.div>
-                                ))}
-                            </div>
+                                );
+                            })}
+                        </div>
                         </div>
                     )}
                 </motion.div>
