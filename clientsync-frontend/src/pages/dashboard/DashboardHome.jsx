@@ -219,15 +219,14 @@ export default function DashboardHome() {
                             </Link>
                         </div>
                     ) : (
-                        <div className="divide-y" style={{ borderTop: '1px solid var(--border-subtle)', divideColor: 'var(--border-subtle)' }}>
-                            {requests.slice(0, 5).map((req, i) => {
+                        <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                            {requests.slice(0, 5).map((req) => {
                                 const isCompleted = req.status === 'Completed';
                                 return (
                                     <div
                                         key={req._id}
                                         className="relative flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-all overflow-hidden"
                                         style={{
-                                            borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                                             borderLeft: isCompleted ? '3px solid #34d399' : '3px solid transparent',
                                             background: isCompleted ? 'rgba(52, 211, 153, 0.015)' : 'transparent',
                                         }}
