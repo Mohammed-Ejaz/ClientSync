@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, Reorder } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 import StatCard from '../../components/ui/StatCard';
@@ -58,45 +58,130 @@ export default function DashboardHome() {
         { label: 'Completion Rate', value: `${completionRate}%`, color: 'violet', delay: 0.24, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg> },
     ];
 
-    const [order, setOrder] = useState(['stats', 'progress', 'activity']);
 
-    const renderWidget = (id) => {
-        if (id === 'stats') {
-            return (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 cursor-grab active:cursor-grabbing">
+
+    return (
+        <AnimatedPage>
+            <div className="p-6 md:p-8 max-w-6xl mx-auto">
+                {/* Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6"
+                >
+                    <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        Good morning, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        {(() => {
+                            switch (user?.profileType) {
+                                case 'developer':
+                                    return "Ready to build? Your developer dashboard is customized and optimized.";
+                                case 'designer':
+                                    return "Time to create? Your design studio dashboard is set up with asset collections.";
+                                case 'marketer':
+                                    return "Ready to target? Your campaign hub is tuned to collect audience insights.";
+                                case 'agency':
+                                    return "Ready to collaborate? Your agency dashboard is set up for teamwork.";
+                                case 'consultant':
+                                    return "Ready to advise? Your consulting workspace is ready for client briefs.";
+                                default:
+                                    return "Here's your workspace overview for today.";
+                            }
+                        })()}
+                    </p>
+                </motion.div>
+
+                {/* Specialty Tip Banner */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="glass rounded-2xl p-4 mb-8 flex items-start gap-3.5"
+                    style={{
+                        border: '1px solid var(--border-glass)',
+                        background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.02) 100%)',
+                    }}
+                >
+                    <div className="text-xl leading-none select-none mt-0.5">
+                        {user?.profileType === 'developer' && '💻'}
+                        {user?.profileType === 'designer' && '🎨'}
+                        {user?.profileType === 'marketer' && '📣'}
+                        {user?.profileType !== 'developer' && user?.profileType !== 'designer' && user?.profileType !== 'marketer' && '💡'}
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                            {(() => {
+                                switch (user?.profileType) {
+                                    case 'developer': return 'Developer Suite Active';
+                                    case 'designer': return 'Design Studio Active';
+                                    case 'marketer': return 'Marketing Hub Active';
+                                    case 'agency': return 'Agency Suite Active';
+                                    case 'consultant': return 'Consulting Workspace Active';
+                                    default: return 'ClientSync Workspace Active';
+                                }
+                            })()}
+                        </h4>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            {(() => {
+                                switch (user?.profileType) {
+                                    case 'developer':
+                                        return 'Your workspace is configured for software engineering. Client onboarding links automatically request technical details (domain, hosting, CMS) and developer setup details (tech stack, repository preferences, third-party integrations).';
+                                    case 'designer':
+                                        return 'Your workspace is configured for design and branding. Client onboarding links automatically request visual identity assets (brand colors, logo file URLs, typography) and design preferences (inspirations, layout styles).';
+                                    case 'marketer':
+                                        return 'Your workspace is configured for digital marketing. Client onboarding links automatically request campaign parameters (target audience, ad budgets, competitors) and marketing platforms.';
+                                    default:
+                                        return 'Your workspace is configured in default mode. Onboarding links request standard business information, visual assets, and initial domain configurations.';
+                                }
+                            })()}
+                        </p>
+                    </div>
+                </motion.div>
+
+                {/* 1. Stats Grid */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+                >
                     {stats.map((s) => (
                         <StatCard key={s.label} {...s} />
                     ))}
-                </div>
-            );
-        }
-        if (id === 'progress') {
-            if (total === 0) return null;
-            return (
-                <div
-                    className="glass rounded-2xl p-6 mb-8 cursor-grab active:cursor-grabbing"
-                    style={{ border: '1px solid var(--border-glass)' }}
-                >
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Overall completion rate</span>
-                        <span className="text-sm font-bold" style={{ color: 'var(--indigo-400)' }}>{completionRate}%</span>
-                    </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${completionRate}%` }}
-                            transition={{ duration: 1, delay: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                            className="h-full rounded-full"
-                            style={{ background: 'linear-gradient(90deg, var(--indigo-500), var(--violet-500))' }}
-                        />
-                    </div>
-                </div>
-            );
-        }
-        if (id === 'activity') {
-            return (
-                <div
-                    className="glass rounded-2xl cursor-grab active:cursor-grabbing"
+                </motion.div>
+
+                {/* 2. Progress Widget */}
+                {total > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="glass rounded-2xl p-6 mb-8"
+                        style={{ border: '1px solid var(--border-glass)' }}
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Overall completion rate</span>
+                            <span className="text-sm font-bold" style={{ color: 'var(--indigo-400)' }}>{completionRate}%</span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${completionRate}%` }}
+                                transition={{ duration: 1, delay: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                                className="h-full rounded-full"
+                                style={{ background: 'linear-gradient(90deg, var(--indigo-500), var(--violet-500))' }}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 3. Recent Activity */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="glass rounded-2xl"
                     style={{ border: '1px solid var(--border-glass)' }}
                 >
                     <div className="flex items-center justify-between p-6 pb-0 mb-4">
@@ -181,114 +266,19 @@ export default function DashboardHome() {
                                             {req.status === 'Completed' && (
                                                 <Link
                                                     to={`/dashboard/submissions/${req._id}`}
-                                                className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                                                style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--indigo-400)', border: '1px solid rgba(99,102,241,0.2)' }}
-                                            >
-                                                View Data
-                                            </Link>
-                                        )}
+                                                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                                                    style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--indigo-400)', border: '1px solid rgba(99,102,241,0.2)' }}
+                                                >
+                                                    View Data
+                                                </Link>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
-                </div>
-            );
-        }
-        return null;
-    };
-
-    return (
-        <AnimatedPage>
-            <div className="p-6 md:p-8 max-w-6xl mx-auto">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-6"
-                >
-                    <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                        Good morning, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                        {(() => {
-                            switch (user?.profileType) {
-                                case 'developer':
-                                    return "Ready to build? Your developer dashboard is customized and optimized.";
-                                case 'designer':
-                                    return "Time to create? Your design studio dashboard is set up with asset collections.";
-                                case 'marketer':
-                                    return "Ready to target? Your campaign hub is tuned to collect audience insights.";
-                                case 'agency':
-                                    return "Ready to collaborate? Your agency dashboard is set up for teamwork.";
-                                case 'consultant':
-                                    return "Ready to advise? Your consulting workspace is ready for client briefs.";
-                                default:
-                                    return "Here's your workspace overview for today.";
-                            }
-                        })()}
-                    </p>
                 </motion.div>
-
-                {/* Specialty Tip Banner */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="glass rounded-2xl p-4 mb-8 flex items-start gap-3.5"
-                    style={{
-                        border: '1px solid var(--border-glass)',
-                        background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.02) 100%)',
-                    }}
-                >
-                    <div className="text-xl leading-none select-none mt-0.5">
-                        {user?.profileType === 'developer' && '💻'}
-                        {user?.profileType === 'designer' && '🎨'}
-                        {user?.profileType === 'marketer' && '📣'}
-                        {user?.profileType !== 'developer' && user?.profileType !== 'designer' && user?.profileType !== 'marketer' && '💡'}
-                    </div>
-                    <div>
-                        <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
-                            {(() => {
-                                switch (user?.profileType) {
-                                    case 'developer': return 'Developer Suite Active';
-                                    case 'designer': return 'Design Studio Active';
-                                    case 'marketer': return 'Marketing Hub Active';
-                                    case 'agency': return 'Agency Suite Active';
-                                    case 'consultant': return 'Consulting Workspace Active';
-                                    default: return 'ClientSync Workspace Active';
-                                }
-                            })()}
-                        </h4>
-                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                            {(() => {
-                                switch (user?.profileType) {
-                                    case 'developer':
-                                        return 'Your workspace is configured for software engineering. Client onboarding links automatically request technical details (domain, hosting, CMS) and developer setup details (tech stack, repository preferences, third-party integrations).';
-                                    case 'designer':
-                                        return 'Your workspace is configured for design and branding. Client onboarding links automatically request visual identity assets (brand colors, logo file URLs, typography) and design preferences (inspirations, layout styles).';
-                                    case 'marketer':
-                                        return 'Your workspace is configured for digital marketing. Client onboarding links automatically request campaign parameters (target audience, ad budgets, competitors) and marketing platforms.';
-                                    default:
-                                        return 'Your workspace is configured in default mode. Onboarding links request standard business information, visual assets, and initial domain configurations.';
-                                }
-                            })()}
-                        </p>
-                    </div>
-                </motion.div>
-
-                {/* Draggable Dashboard Layout */}
-                <Reorder.Group axis="y" values={order} onReorder={setOrder} className="flex flex-col gap-0">
-                    {order.map((id) => {
-                        const content = renderWidget(id);
-                        if (!content) return null;
-                        return (
-                            <Reorder.Item key={id} value={id}>
-                                {content}
-                            </Reorder.Item>
-                        );
-                    })}
-                </Reorder.Group>
             </div>
         </AnimatedPage>
     );
