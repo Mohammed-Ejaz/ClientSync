@@ -212,7 +212,7 @@ export default function LandingPage() {
             </section>
 
             {/* ── FEATURES BENTO ─────────────────────────────────────────────── */}
-            <section id="features" className="py-24 px-6 max-w-6xl mx-auto">
+            <section id="features" className="py-24 px-6 max-w-6xl mx-auto relative">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -230,11 +230,14 @@ export default function LandingPage() {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Ambient orb behind the cards to prevent pure black background */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-96 pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 60%)', filter: 'blur(80px)' }} />
+
+                <motion.div style={{ y: useTransform(scrollY, [0, 800], [0, -40]) }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
                     {features.map((f, i) => (
                         <FeatureCard key={i} {...f} delay={i * 0.08} />
                     ))}
-                </div>
+                </motion.div>
             </section>
 
 

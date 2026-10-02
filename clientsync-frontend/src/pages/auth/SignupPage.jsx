@@ -198,8 +198,8 @@ export default function SignupPage() {
                         >
                             {step === 1 ? (
                                 <div className="flex flex-col gap-5">
-                                    <FloatingInput id="signup-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Johnson" autoComplete="name" />
-                                    <FloatingInput id="signup-email" label="Work email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="alex@studio.com" autoComplete="email" />
+                                    <FloatingInput id="signup-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Johnson" autoComplete="off" />
+                                    <FloatingInput id="signup-email" label="Work email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="alex@studio.com" autoComplete="off" />
                                     <button id="signup-next" type="button" onClick={handleNextStep} className="btn-primary mt-2">
                                         Continue
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -207,8 +207,8 @@ export default function SignupPage() {
                                 </div>
                             ) : (
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                                    <FloatingInput id="signup-password" label="Create password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 characters" autoComplete="new-password" />
-                                    <FloatingInput id="signup-confirm" label="Confirm password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" />
+                                    <FloatingInput id="signup-password" label="Create password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 characters" autoComplete="off" />
+                                    <FloatingInput id="signup-confirm" label="Confirm password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="off" />
 
                                     {/* Password strength indicator */}
                                     {password && (
@@ -252,6 +252,7 @@ export default function SignupPage() {
                             )}
                         </motion.div>
                     </AnimatePresence>
+
 
                     <div className="mt-6 pt-6 text-center" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>

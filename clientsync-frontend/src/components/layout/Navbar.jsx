@@ -56,59 +56,72 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Desktop Nav */}
-                    <div className="hidden md:flex items-center gap-1">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                to={link.href}
-                                className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                                style={{
-                                    color: location.pathname === link.href
-                                        ? 'var(--text-primary)'
-                                        : 'var(--text-secondary)',
-                                    background: location.pathname === link.href
-                                        ? 'rgba(99,102,241,0.15)'
-                                        : 'transparent',
-                                }}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </div>
 
-                    {/* CTA Buttons — auth-aware */}
-                    <div className="hidden md:flex items-center gap-3">
-                        {user ? (
-                            /* Already logged in → go to dashboard */
-                            <Link
-                                to="/dashboard"
-                                className="btn-primary text-sm py-2 px-5 flex items-center gap-2"
-                            >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="3" width="7" height="7" rx="1" />
-                                    <rect x="14" y="3" width="7" height="7" rx="1" />
-                                    <rect x="14" y="14" width="7" height="7" rx="1" />
-                                    <rect x="3" y="14" width="7" height="7" rx="1" />
-                                </svg>
-                                Go to Dashboard
-                            </Link>
-                        ) : (
-                            /* Guest → sign in / get started */
-                            <>
-                                <Link to="/login" className="btn-ghost text-sm">
-                                    Sign In
-                                </Link>
-                                <Link to="/signup" className="btn-primary text-sm py-2 px-5">
-                                    Get Started Free
-                                </Link>
-                            </>
-                        )}
-                    </div>
+
+                    {/* Menu Button */}
+                    <button
+                        className="p-2 rounded-lg"
+                        style={{ color: 'var(--text-secondary)' }}
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            {mobileOpen ? (
+                                <>
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </>
+                            ) : (
+                                <>
+                                    <line x1="3" y1="12" x2="21" y2="12" />
+                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                    <line x1="3" y1="18" x2="21" y2="18" />
+                                </>
+                            )}
+                        </svg>
+                    </button>
 
                 </div>
             </motion.nav>
 
+            {/* Menu Dropdown */}
+            <AnimatePresence>
+                {mobileOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed inset-x-0 top-[88px] z-40 px-6 max-w-6xl mx-auto"
+                    >
+                        <div
+                            className="glass-elevated rounded-2xl p-4 flex flex-col gap-2"
+                            style={{ border: '1px solid var(--border-glass)' }}
+                        >
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    to={link.href}
+                                    className="px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                                    style={{
+                                        color: location.pathname === link.href ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                        background: location.pathname === link.href ? 'rgba(99,102,241,0.1)' : 'transparent',
+                                    }}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                            <div className="h-px w-full my-2" style={{ background: 'var(--border-subtle)' }} />
+                            {user ? (
+                                <Link to="/dashboard" className="btn-primary w-full justify-center">Go to Dashboard</Link>
+                            ) : (
+                                <div className="flex flex-col gap-2">
+                                    <Link to="/login" className="btn-ghost w-full justify-center">Sign In</Link>
+                                    <Link to="/signup" className="btn-primary w-full justify-center">Get Started Free</Link>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 }

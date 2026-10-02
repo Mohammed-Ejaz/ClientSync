@@ -139,11 +139,11 @@ export default function LoginPage() {
                         <FloatingInput
                             id="login-email"
                             label="Email address"
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="you@company.com"
-                            autoComplete="email"
+                            autoComplete="off"
                         />
                         <FloatingInput
                             id="login-password"
@@ -152,7 +152,7 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            autoComplete="current-password"
+                            autoComplete="off"
                         />
 
                         <button
@@ -171,6 +171,7 @@ export default function LoginPage() {
                             ) : 'Sign in to workspace'}
                         </button>
                     </form>
+
 
                     <div className="mt-6 pt-6 text-center" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>

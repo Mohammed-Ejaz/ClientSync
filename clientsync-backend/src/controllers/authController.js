@@ -102,12 +102,12 @@ export const login = async (req, res) => {
 
     const freelancer = await Freelancer.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash');
     if (!freelancer) {
-        return res.status(401).json({ status: 'Fail', message: 'Invalid email or password.' });
+        return res.status(401).json({ status: 'Fail', message: 'Incorrect email or password. Please try again.' });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, freelancer.passwordHash);
     if (!isPasswordCorrect) {
-        return res.status(401).json({ status: 'Fail', message: 'Invalid email or password.' });
+        return res.status(401).json({ status: 'Fail', message: 'Incorrect email or password. Please try again.' });
     }
 
     const token = signToken(freelancer._id);
