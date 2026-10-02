@@ -203,9 +203,9 @@ export default function LinksPage() {
                                 <p className="text-xs font-semibold mb-2" style={{ color: '#34d399' }}>✓ Link generated for {newLink.clientName}</p>
                                 <div className="flex items-center gap-3">
                                     <code className="flex-1 text-xs font-mono px-3 py-2 rounded-lg truncate" style={{ background: 'rgba(0,0,0,0.3)', color: 'var(--text-secondary)' }}>
-                                        {newLink.onboardingUrl}
+                                        {`${window.location.origin}/onboarding/${newLink.uniqueLink}`}
                                     </code>
-                                    <CopyButton text={newLink.onboardingUrl} />
+                                    <CopyButton text={`${window.location.origin}/onboarding/${newLink.uniqueLink}`} />
                                 </div>
                             </motion.div>
                         )}
