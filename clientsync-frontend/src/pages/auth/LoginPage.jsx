@@ -56,7 +56,8 @@ export default function LoginPage() {
             await login(email, password);
             navigate(from, { replace: true });
         } catch (err) {
-            const msg = err.response?.data?.message || 'Login failed. Please try again.';
+            console.error('Login error:', err);
+            const msg = err.response?.data?.message || err.message || 'Login failed. Please try again.';
             setError(msg);
             setShakeKey((k) => k + 1);
         } finally {

@@ -88,7 +88,8 @@ export default function SignupPage() {
             await signup(name.trim(), email.trim(), password);
             navigate('/dashboard', { replace: true });
         } catch (err) {
-            const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+            console.error('Signup error:', err);
+            const msg = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
             setError(msg);
             setShakeKey((k) => k + 1);
         } finally {
