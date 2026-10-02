@@ -1,0 +1,23 @@
+/* Apply these by adding `@import "./styles/patch.css";` near the top of
+   src/index.css (after the Tailwind import). Kept separate so the diff
+   against your existing index.css stays easy to review. */
+
+:root {
+    /* Referenced by LinksPage.jsx (token URL preview text) but never defined
+     in the original palette — was silently falling back to inherited color. */
+    --indigo-300: #a5b4fc;
+}
+
+/* Respect the OS-level "reduce motion" setting: the aurora background,
+   marquee, and pulse/spin loops otherwise animate forever regardless of
+   the user's accessibility preference. */
+@media (prefers-reduced-motion: reduce) {
+
+    .bg-orb,
+    .animate-marquee,
+    .animate-float,
+    .animate-pulse-glow,
+    .animate-spin-slow {
+        animation: none !important;
+    }
+}
