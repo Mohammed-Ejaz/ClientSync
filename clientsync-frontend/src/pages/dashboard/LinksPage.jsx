@@ -335,26 +335,6 @@ export default function LinksPage() {
                                         </div>
                                         <div className="md:col-span-2 flex justify-start md:justify-end items-center gap-2 flex-wrap sm:flex-nowrap">
                                             <button
-                                                onClick={() => fetchLinks(false)}
-                                                disabled={isRefreshing}
-                                                className="text-xs p-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/10"
-                                                style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                                                title="Refresh this link status"
-                                                aria-label={`Refresh status for ${req.clientName}`}
-                                            >
-                                                <svg
-                                                    className={isRefreshing ? 'animate-spin' : ''}
-                                                    width="13"
-                                                    height="13"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                >
-                                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                                                </svg>
-                                            </button>
-                                            <button
                                                 onClick={() => setEditingRequest(req)}
                                                 className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all duration-200"
                                                 style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
