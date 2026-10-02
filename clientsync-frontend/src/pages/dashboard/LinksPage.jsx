@@ -305,30 +305,64 @@ export default function LinksPage() {
                             </div>
 
                             <div>
-                                {filtered.map((req, i) => (
-                                    <motion.div
-                                        key={req._id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.04 }}
-                                        className="flex flex-col md:grid md:grid-cols-12 md:items-center px-6 py-4 hover:bg-white/[0.02] transition-colors"
-                                        style={{ borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none' }}
-                                    >
-                                        <div className="md:col-span-3 flex items-center justify-between md:justify-start gap-3 min-w-0 mb-3 md:mb-0">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ background: 'rgba(99,102,241,0.15)', color: 'var(--indigo-400)' }}>
-                                                    {req.clientName?.[0]?.toUpperCase()}
+                                {filtered.map((req, i) => {
+                                    const isCompleted = req.status === 'Completed';
+                                    return (
+                                        <motion.div
+                                            key={req._id}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: i * 0.04 }}
+                                            className="relative flex flex-col md:grid md:grid-cols-12 md:items-center px-6 py-4 hover:bg-white/[0.02] transition-all overflow-hidden"
+                                            style={{
+                                                borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
+                                                borderLeft: isCompleted ? '3px solid #34d399' : '3px solid transparent',
+                                                background: isCompleted ? 'rgba(52, 211, 153, 0.015)' : 'transparent',
+                                            }}
+                                        >
+                                            {/* Passing color wave effect for completed links */}
+                                            {isCompleted && (
+                                                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                                                    <div
+                                                        className="absolute inset-y-0 w-2/5 animate-completion-sweep"
+                                                        style={{
+                                                            background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.08) 50%, transparent 100%)',
+                                                            filter: 'blur(10px)',
+                                                        }}
+                                                    />
                                                 </div>
-                                                <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{req.clientName}</span>
+                                            )}
+
+                                            <div className="relative z-10 md:col-span-3 flex items-center justify-between md:justify-start gap-3 min-w-0 mb-3 md:mb-0">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div
+                                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all"
+                                                        style={{
+                                                            background: isCompleted ? 'rgba(52, 211, 153, 0.15)' : 'rgba(99,102,241,0.15)',
+                                                            color: isCompleted ? '#34d399' : 'var(--indigo-400)',
+                                                            boxShadow: isCompleted ? '0 0 12px rgba(52, 211, 153, 0.25)' : 'none',
+                                                        }}
+                                                    >
+                                                        {req.clientName?.[0]?.toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <span className="text-sm font-medium truncate block" style={{ color: 'var(--text-primary)' }}>{req.clientName}</span>
+                                                        {isCompleted && (
+                                                            <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
+                                                                Form submitted
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="md:hidden">
+                                                    <Badge status={req.status} />
+                                                </div>
                                             </div>
-                                            <div className="md:hidden">
-                                                <Badge status={req.status} />
+                                            <div className="relative z-10 md:col-span-4 flex md:hidden lg:flex items-center gap-2 mb-3 md:mb-0">
+                                                <code className="text-xs font-mono truncate" style={{ color: 'var(--text-muted)' }}>{req.uniqueLinkUrl}</code>
+                                                <CopyButton text={`${window.location.origin}/onboarding/${req.uniqueLinkUrl}`} />
                                             </div>
-                                        </div>
-                                        <div className="md:col-span-4 flex md:hidden lg:flex items-center gap-2 mb-3 md:mb-0">
-                                            <code className="text-xs font-mono truncate" style={{ color: 'var(--text-muted)' }}>{req.uniqueLinkUrl}</code>
-                                            <CopyButton text={`${window.location.origin}/onboarding/${req.uniqueLinkUrl}`} />
-                                        </div>
                                         <div className="md:col-span-2 hidden md:block"><Badge status={req.status} /></div>
                                         <div className="md:col-span-1 hidden md:block text-xs" style={{ color: 'var(--text-muted)' }}>
                                             {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

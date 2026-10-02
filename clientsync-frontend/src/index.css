@@ -766,4 +766,25 @@
   .delay-800 {
     animation-delay: 800ms;
   }
+
+  @keyframes completionSweep {
+    0% {
+      transform: translateX(-120%);
+      opacity: 0;
+    }
+    25% {
+      opacity: 0.85;
+    }
+    75% {
+      opacity: 0.85;
+    }
+    100% {
+      transform: translateX(350%);
+      opacity: 0;
+    }
+  }
+
+  .animate-completion-sweep {
+    animation: completionSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
 }

@@ -135,29 +135,52 @@ export default function DashboardHome() {
                         </div>
                     ) : (
                         <div className="divide-y" style={{ borderTop: '1px solid var(--border-subtle)', divideColor: 'var(--border-subtle)' }}>
-                            {requests.slice(0, 5).map((req, i) => (
-                                <div
-                                    key={req._id}
-                                    className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
-                                    style={{ borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none' }}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
-                                            style={{ background: 'rgba(99,102,241,0.15)', color: 'var(--indigo-400)' }}
-                                        >
-                                            {req.clientName?.[0]?.toUpperCase() || '?'}
+                            {requests.slice(0, 5).map((req, i) => {
+                                const isCompleted = req.status === 'Completed';
+                                return (
+                                    <div
+                                        key={req._id}
+                                        className="relative flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-all overflow-hidden"
+                                        style={{
+                                            borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
+                                            borderLeft: isCompleted ? '3px solid #34d399' : '3px solid transparent',
+                                            background: isCompleted ? 'rgba(52, 211, 153, 0.015)' : 'transparent',
+                                        }}
+                                    >
+                                        {/* Color beam sweep for completed links */}
+                                        {isCompleted && (
+                                            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                                                <div
+                                                    className="absolute inset-y-0 w-2/5 animate-completion-sweep"
+                                                    style={{
+                                                        background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.08) 50%, transparent 100%)',
+                                                        filter: 'blur(10px)',
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="relative z-10 flex items-center gap-3">
+                                            <div
+                                                className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all"
+                                                style={{
+                                                    background: isCompleted ? 'rgba(52, 211, 153, 0.15)' : 'rgba(99,102,241,0.15)',
+                                                    color: isCompleted ? '#34d399' : 'var(--indigo-400)',
+                                                    boxShadow: isCompleted ? '0 0 12px rgba(52, 211, 153, 0.25)' : 'none',
+                                                }}
+                                            >
+                                                {req.clientName?.[0]?.toUpperCase() || '?'}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{req.clientName}</p>
+                                                <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{req.uniqueLinkUrl}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{req.clientName}</p>
-                                            <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{req.uniqueLinkUrl}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Badge status={req.status} />
-                                        {req.status === 'Completed' && (
-                                            <Link
-                                                to={`/dashboard/submissions/${req._id}`}
+                                        <div className="relative z-10 flex items-center gap-4">
+                                            <Badge status={req.status} />
+                                            {req.status === 'Completed' && (
+                                                <Link
+                                                    to={`/dashboard/submissions/${req._id}`}
                                                 className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                                                 style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--indigo-400)', border: '1px solid rgba(99,102,241,0.2)' }}
                                             >
