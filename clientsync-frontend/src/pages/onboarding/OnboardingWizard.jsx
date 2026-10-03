@@ -73,6 +73,7 @@ export default function OnboardingWizard() {
     const draftKey = `${DRAFT_PREFIX}${uniqueLink}`;
 
     const [preflight, setPreflight] = useState({ loading: true, error: null, clientName: '', profileType: 'other', hadPreviousSubmission: false });
+    const [takingLonger, setTakingLonger] = useState(false);
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(1);
     const [status, setStatus] = useState('idle'); // idle | submitting | success | error
@@ -83,54 +84,56 @@ export default function OnboardingWizard() {
     const profileType = preflight.profileType || 'other';
     const steps = useMemo(() => getSteps(profileType), [profileType]);
 
-    // Pre-flight: verify link is valid, then load previous submission or a
-    // locally-saved draft (whichever exists) into the form.
-    useEffect(() => {
-        let cancelled = false;
+    const verify = useCallback(async () => {
+        setPreflight({ loading: true, error: null, clientName: '', profileType: 'other', hadPreviousSubmission: false });
+        setTakingLonger(false);
 
-        const verify = async () => {
-            try {
-                const res = await api.get(`/submissions/check/${uniqueLink}`);
-                if (cancelled) return;
-                const { clientName, previousSubmissionData, profileType: backendProfileType } = res.data.data;
+        const timer = setTimeout(() => {
+            setTakingLonger(true);
+        }, 3500);
 
-                setPreflight({
-                    loading: false,
-                    error: null,
-                    clientName,
-                    profileType: backendProfileType || 'other',
-                    hadPreviousSubmission: !!previousSubmissionData,
-                });
+        try {
+            const res = await api.get(`/submissions/check/${uniqueLink}`);
+            clearTimeout(timer);
+            setTakingLonger(false);
+            const { clientName, previousSubmissionData, profileType: backendProfileType } = res.data.data;
 
-                if (previousSubmissionData) {
-                    setFormData(mergeSubmissionIntoForm(backendProfileType || 'other', previousSubmissionData));
-                } else {
-                    // No server-side data yet — restore an in-progress local draft, if any.
-                    try {
-                        const raw = localStorage.getItem(draftKey);
-                        if (raw) {
-                            const draft = JSON.parse(raw);
-                            setFormData(mergeSubmissionIntoForm(backendProfileType || 'other', draft.formData));
-                            setStep(Math.min(draft.step || 1, getSteps(backendProfileType || 'other').length));
-                        } else {
-                            setFormData(buildEmptyForm(backendProfileType || 'other'));
-                        }
-                    } catch {
+            setPreflight({
+                loading: false,
+                error: null,
+                clientName,
+                profileType: backendProfileType || 'other',
+                hadPreviousSubmission: !!previousSubmissionData,
+            });
+
+            if (previousSubmissionData) {
+                setFormData(mergeSubmissionIntoForm(backendProfileType || 'other', previousSubmissionData));
+            } else {
+                try {
+                    const raw = localStorage.getItem(draftKey);
+                    if (raw) {
+                        const draft = JSON.parse(raw);
+                        setFormData(mergeSubmissionIntoForm(backendProfileType || 'other', draft.formData));
+                        setStep(Math.min(draft.step || 1, getSteps(backendProfileType || 'other').length));
+                    } else {
                         setFormData(buildEmptyForm(backendProfileType || 'other'));
                     }
+                } catch {
+                    setFormData(buildEmptyForm(backendProfileType || 'other'));
                 }
-            } catch (err) {
-                if (cancelled) return;
-                const msg = err.response?.data?.message || 'This onboarding link is invalid or has expired.';
-                const alreadyDone = err.response?.data?.alreadyCompleted;
-                setPreflight((prev) => ({ ...prev, loading: false, error: msg, alreadyDone }));
             }
-        };
+        } catch (err) {
+            clearTimeout(timer);
+            setTakingLonger(false);
+            const msg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Connection timed out while waking up the server. Please tap retry.' : 'Unable to connect to the onboarding server or link has expired.');
+            const alreadyDone = err.response?.data?.alreadyCompleted;
+            setPreflight((prev) => ({ ...prev, loading: false, error: msg, alreadyDone }));
+        }
+    }, [uniqueLink, draftKey]);
 
+    useEffect(() => {
         verify();
-        return () => { cancelled = true; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uniqueLink]);
+    }, [verify]);
 
     // Persist a local draft (debounced) whenever the form changes, as long as
     // we're not editing a previously-submitted record (that's already saved
@@ -199,10 +202,21 @@ export default function OnboardingWizard() {
     // ── Loading state ─────────────────────────────────────────────────────────
     if (preflight.loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-base)' }}>
-                <div className="flex flex-col items-center gap-4">
+            <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-base)' }}>
+                <div className="flex flex-col items-center gap-4 text-center max-w-sm">
                     <div className="w-12 h-12 rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--indigo-500)', animation: 'spin-slow 0.8s linear infinite' }} />
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Verifying your onboarding link…</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Verifying your onboarding link…</p>
+                    {takingLonger && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-3.5 rounded-xl text-xs space-y-1"
+                            style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: 'var(--text-secondary)' }}
+                        >
+                            <p className="font-semibold text-indigo-300">⚡ Waking up cloud server…</p>
+                            <p>Free cloud instances spin down after inactivity. Connecting now (takes ~20–30s)...</p>
+                        </motion.div>
+                    )}
                 </div>
             </div>
         );
@@ -216,7 +230,7 @@ export default function OnboardingWizard() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="glass-elevated rounded-2xl p-12 max-w-md w-full text-center relative"
+                    className="glass-elevated rounded-2xl p-10 max-w-md w-full text-center relative"
                 >
                     <div
                         className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
@@ -229,9 +243,19 @@ export default function OnboardingWizard() {
                         )}
                     </div>
                     <h2 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        {preflight.alreadyDone ? 'Already Submitted' : 'Link Invalid'}
+                        {preflight.alreadyDone ? 'Already Submitted' : 'Link Unavailable or Expired'}
                     </h2>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{preflight.error}</p>
+                    <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>{preflight.error}</p>
+                    
+                    {!preflight.alreadyDone && (
+                        <button
+                            onClick={verify}
+                            className="btn-primary w-full flex items-center justify-center gap-2"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
+                            Retry Connection
+                        </button>
+                    )}
                 </motion.div>
             </div>
         );
