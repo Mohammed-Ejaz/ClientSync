@@ -56,35 +56,67 @@ function StatusTimeline({ status }) {
     const currentIndex = statuses.indexOf(status);
 
     return (
-        <div className="flex items-center justify-between mb-8 relative px-4">
-            <div className="absolute top-1/2 left-4 right-4 h-1 -translate-y-1/2 rounded-full z-0" style={{ background: 'var(--border-glass)' }}></div>
-            <motion.div 
-                className="absolute top-1/2 left-4 h-1 -translate-y-1/2 rounded-full z-0" 
-                style={{ background: 'var(--indigo-500)' }}
-                initial={{ width: '0%' }}
-                animate={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-            {statuses.map((s, i) => (
-                <div key={s} className="relative z-10 flex flex-col items-center gap-2">
-                    <motion.div
-                        className="w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg"
-                        initial={false}
-                        animate={{ 
-                            background: i <= currentIndex ? 'var(--indigo-600)' : 'var(--bg-surface)',
-                            borderColor: i <= currentIndex ? 'var(--indigo-400)' : 'var(--border-subtle)',
-                            color: i <= currentIndex ? '#fff' : 'var(--text-muted)'
-                        }}
-                    >
-                        {i < currentIndex ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                        ) : (
-                            <span className="text-xs font-bold">{i + 1}</span>
-                        )}
-                    </motion.div>
-                    <span className="text-xs font-medium" style={{ color: i <= currentIndex ? 'var(--text-primary)' : 'var(--text-muted)' }}>{s}</span>
-                </div>
-            ))}
+        <div className="w-full mb-8 px-2 sm:px-4">
+            <div className="flex items-center w-full">
+                {statuses.map((s, i) => {
+                    const isPassed = i < currentIndex;
+                    const isCurrent = i === currentIndex;
+                    const isComplete = i <= currentIndex;
+
+                    return (
+                        <div key={s} className="flex-1 relative flex flex-col items-center">
+                            {/* Connecting line to the next node (except for the last node) */}
+                            {i < statuses.length - 1 && (
+                                <div className="absolute top-4 left-1/2 w-full h-[2px] -translate-y-1/2 z-0 overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                    <motion.div
+                                        className="h-full rounded-full"
+                                        initial={false}
+                                        animate={{ width: isPassed ? '100%' : '0%' }}
+                                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                                        style={{ background: 'linear-gradient(90deg, var(--indigo-500), var(--violet-500))' }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Step Node Circle */}
+                            <motion.div
+                                className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-md"
+                                initial={false}
+                                animate={{
+                                    background: isComplete ? 'linear-gradient(135deg, var(--indigo-600), var(--violet-600))' : 'var(--bg-surface)',
+                                    borderColor: isComplete ? 'var(--indigo-400)' : 'var(--border-subtle)',
+                                    color: isComplete ? '#ffffff' : 'var(--text-muted)',
+                                    scale: isCurrent ? 1.08 : 1,
+                                    boxShadow: isCurrent ? '0 0 16px rgba(99,102,241,0.35)' : 'none',
+                                }}
+                                style={{
+                                    borderWidth: '2px',
+                                    borderStyle: 'solid',
+                                }}
+                            >
+                                {isPassed ? (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                ) : (
+                                    <span>{i + 1}</span>
+                                )}
+                            </motion.div>
+
+                            {/* Step Label */}
+                            <span
+                                className="mt-2 text-xs font-medium text-center whitespace-nowrap px-1 transition-colors duration-200"
+                                style={{
+                                    color: isComplete ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    fontWeight: isCurrent ? 600 : 500,
+                                }}
+                            >
+                                {s}
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
