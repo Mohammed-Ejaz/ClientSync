@@ -1,50 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
-import api from '../../services/api';
+import { useRequests } from '../../hooks/useRequests';
 import StatCard from '../../components/ui/StatCard';
 import Badge from '../../components/ui/Badge';
 import AnimatedPage from '../../components/AnimatedPage';
 
 export default function DashboardHome() {
     const { user } = useAuth();
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        let isMounted = true;
-        const fetchData = async (isSilent = false) => {
-            try {
-                const res = await api.get('/requests');
-                if (isMounted) {
-                    setRequests(res.data.data || []);
-                    setError('');
-                }
-            } catch {
-                if (isMounted && !isSilent) {
-                    setError('Failed to load workspace data. Please refresh.');
-                }
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        fetchData();
-
-        // Auto-poll in background every 12 seconds when active
-        const timer = setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                fetchData(true);
-            }
-        }, 12000);
-
-        return () => {
-            isMounted = false;
-            clearInterval(timer);
-        };
-    }, []);
+    const { requests, loading, error } = useRequests();
 
     const total = requests.length;
     const completed = requests.filter((r) => r.status === 'Completed').length;
@@ -237,8 +201,7 @@ export default function DashboardHome() {
                                                 <div
                                                     className="absolute inset-y-0 w-2/5 animate-completion-sweep"
                                                     style={{
-                                                        background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.08) 50%, transparent 100%)',
-                                                        filter: 'blur(10px)',
+                                                        background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.12) 50%, transparent 100%)',
                                                     }}
                                                 />
                                             </div>

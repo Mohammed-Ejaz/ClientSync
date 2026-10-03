@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
+import { useRequests } from '../../hooks/useRequests';
 import Badge from '../../components/ui/Badge';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import EditRequestModal from './EditRequestModal';
@@ -46,9 +47,7 @@ function CopyButton({ text }) {
 }
 
 export default function LinksPage() {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState('');
+    const { requests, loading, isRefreshing, error: loadError, fetchRequests, addRequest, removeRequestFromCache } = useRequests();
     const [clientName, setClientName] = useState('');
     const [clientEmail, setClientEmail] = useState('');
     const [generating, setGenerating] = useState(false);
@@ -61,32 +60,9 @@ export default function LinksPage() {
     const [deleteBusy, setDeleteBusy] = useState(false);
     const [deleteError, setDeleteError] = useState('');
 
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
     const fetchLinks = useCallback(async (isSilent = false) => {
-        if (!isSilent) setIsRefreshing(true);
-        try {
-            const res = await api.get('/requests');
-            setRequests(res.data.data || []);
-            setLoadError('');
-        } catch {
-            if (!isSilent) setLoadError('Failed to load links.');
-        } finally {
-            setLoading(false);
-            if (!isSilent) setTimeout(() => setIsRefreshing(false), 400);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchLinks();
-        // Auto-refresh in background every 10 seconds when tab is active
-        const timer = setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                fetchLinks(true);
-            }
-        }, 10000);
-        return () => clearInterval(timer);
-    }, [fetchLinks]);
+        await fetchRequests(isSilent);
+    }, [fetchRequests]);
 
     const handleGenerate = async (e) => {
         e.preventDefault();
@@ -98,9 +74,9 @@ export default function LinksPage() {
         try {
             const res = await api.post('/requests/create', { clientName: clientName.trim(), clientEmail: clientEmail.trim() });
             setNewLink(res.data.data);
+            addRequest(res.data.data);
             setClientName('');
             setClientEmail('');
-            fetchLinks();
         } catch (err) {
             setGenError(err.response?.data?.message || 'Failed to generate link.');
         } finally {
@@ -114,8 +90,8 @@ export default function LinksPage() {
         setDeleteError('');
         try {
             await api.delete(`/requests/${deletingRequest._id}`);
+            removeRequestFromCache(deletingRequest._id);
             setDeletingRequest(null);
-            fetchLinks();
         } catch (err) {
             setDeleteError(err.response?.data?.message || 'Failed to delete this link.');
         } finally {
@@ -326,8 +302,7 @@ export default function LinksPage() {
                                                     <div
                                                         className="absolute inset-y-0 w-2/5 animate-completion-sweep"
                                                         style={{
-                                                            background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.08) 50%, transparent 100%)',
-                                                            filter: 'blur(10px)',
+                                                            background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.12) 50%, transparent 100%)',
                                                         }}
                                                     />
                                                 </div>

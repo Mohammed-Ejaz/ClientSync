@@ -158,50 +158,51 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  contain: strict;
+  isolation: isolate;
+  transform: translateZ(0);
 }
 
 /* ── Aurora blob base ── */
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  will-change: transform;
+  will-change: transform, opacity;
   animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
   animation-iteration-count: infinite;
   animation-direction: alternate;
+  pointer-events: none;
 }
 
-/* ══ DARK theme — vivid deep aurora ══ */
+/* ══ DARK theme — vivid deep aurora with smooth radial gradient falloff (no heavy Gaussian blur filter) ══ */
 /* Top-left: large indigo sweep */
 .bg-orb-1 {
-  width: 1100px;
-  height: 900px;
-  top: -380px;
-  left: -300px;
-  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.38) 0%, rgba(79, 70, 229, 0.15) 45%, transparent 70%);
-  filter: blur(120px);
+  width: 1000px;
+  height: 800px;
+  top: -280px;
+  left: -200px;
+  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.28) 0%, rgba(79, 70, 229, 0.12) 40%, rgba(79, 70, 229, 0.03) 65%, transparent 80%);
   animation: aurora-tl 32s infinite alternate;
 }
 
 /* Bottom-right: violet sweep */
 .bg-orb-2 {
-  width: 1000px;
-  height: 850px;
-  bottom: -350px;
-  right: -280px;
-  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.35) 0%, rgba(109, 40, 217, 0.12) 45%, transparent 70%);
-  filter: blur(140px);
+  width: 950px;
+  height: 750px;
+  bottom: -260px;
+  right: -200px;
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.25) 0%, rgba(109, 40, 217, 0.10) 40%, rgba(109, 40, 217, 0.02) 65%, transparent 80%);
   animation: aurora-br 38s infinite alternate;
 }
 
 /* Centre accent: subtle cyan breath */
 .bg-orb-3 {
-  width: 700px;
-  height: 600px;
-  top: 38%;
-  left: 38%;
+  width: 600px;
+  height: 500px;
+  top: 40%;
+  left: 40%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, rgba(34, 211, 238, 0.12) 0%, transparent 65%);
-  filter: blur(110px);
+  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.08) 0%, rgba(34, 211, 238, 0.02) 45%, transparent 70%);
   animation: aurora-center 26s infinite alternate;
 }
 
@@ -212,34 +213,28 @@
 
 /* ══ DIM theme — same vivid aurora, warmer base ══ */
 [data-theme="dim"] .bg-orb-1 {
-  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.42) 0%, rgba(79, 70, 229, 0.18) 45%, transparent 70%);
-  filter: blur(120px);
+  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.30) 0%, rgba(79, 70, 229, 0.14) 40%, transparent 80%);
 }
 
 [data-theme="dim"] .bg-orb-2 {
-  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.38) 0%, rgba(109, 40, 217, 0.14) 45%, transparent 70%);
-  filter: blur(140px);
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.26) 0%, rgba(109, 40, 217, 0.11) 40%, transparent 80%);
 }
 
 [data-theme="dim"] .bg-orb-3 {
-  background: radial-gradient(ellipse, rgba(34, 211, 238, 0.16) 0%, transparent 65%);
-  filter: blur(110px);
+  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.10) 0%, transparent 70%);
 }
 
-/* ══ LIGHT theme — vivid aurora on white, same energy as dark ══ */
+/* ══ LIGHT theme — vivid aurora on white ══ */
 [data-theme="light"] .bg-orb-1 {
-  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.32) 0%, rgba(79, 70, 229, 0.14) 45%, transparent 70%);
-  filter: blur(130px);
+  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.20) 0%, rgba(79, 70, 229, 0.08) 40%, transparent 80%);
 }
 
 [data-theme="light"] .bg-orb-2 {
-  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.28) 0%, rgba(109, 40, 217, 0.10) 45%, transparent 70%);
-  filter: blur(145px);
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.18) 0%, rgba(109, 40, 217, 0.06) 40%, transparent 80%);
 }
 
 [data-theme="light"] .bg-orb-3 {
-  background: radial-gradient(ellipse, rgba(34, 211, 238, 0.16) 0%, transparent 65%);
-  filter: blur(120px);
+  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
 }
 
 /* ── Aurora keyframes — very slow, smooth breathing ── */
@@ -249,7 +244,7 @@
   }
 
   100% {
-    transform: translate(60px, 50px) scale(1.06);
+    transform: translate(40px, 30px) scale(1.04);
   }
 }
 
@@ -259,77 +254,43 @@
   }
 
   100% {
-    transform: translate(-50px, -40px) scale(1.08);
+    transform: translate(-35px, -25px) scale(1.05);
   }
 }
 
 @keyframes aurora-center {
   0% {
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   100% {
-    transform: translate(-50%, -50%) scale(1.15);
-    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.9;
   }
 }
-
-/* ── Hide old keyframe names (kept for safety) ── */
-@keyframes orb-drift-1 {
-
-  0%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes orb-drift-2 {
-
-  0%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes orb-drift-3 {
-
-  0%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes orb-drift-4 {
-
-  0%,
-  100% {
-    transform: none;
-  }
-}
-
 
 /* ═══════════════════════════════════════════════════════
-   GLASSMORPHISM UTILITIES
+   GLASSMORPHISM UTILITIES — OPTIMIZED COMPOSITING
    ═══════════════════════════════════════════════════════ */
 @layer utilities {
   .glass {
     background: var(--bg-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-glass);
   }
 
   .glass-elevated {
     background: var(--bg-glass-hover);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-card);
   }
 
   .glass-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .glass-hover:hover {
@@ -785,6 +746,8 @@
   }
 
   .animate-completion-sweep {
-    animation: completionSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: completionSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    will-change: transform, opacity;
+    pointer-events: none;
   }
 }
